@@ -5,6 +5,7 @@ from .translations import current_translator, t
 from .canvas_manager import CanvasManager
 from .simulation_manager import SimulationManager
 from .exporter import export_html
+from .draw_objects import Mesh, Strip
 
 class MainWindow:
     def __init__(self, root):
@@ -201,6 +202,44 @@ class MainWindow:
             row += 1
 
         ttk.Button(self.prop_container, text=t('delete'), command=self.delete_selected).grid(row=row, column=0, columnspan=2, pady=10)
+
+        # Special action for Mesh: Explode
+        if isinstance(obj, Mesh):
+            ttk.Button(self.prop_container, text=t('explode'), command=lambda: self.explode_mesh(obj)).grid(row=row+1, column=0, columnspan=2, pady=5)
+
+    def explode_mesh(self, mesh):
+        if not mesh: return
+
+        # Calculate grid lines
+        # X-direction lines (horizontal)
+        # There are Ny lines. Spacing Ly / (Ny-1)
+        dy = mesh.height / (mesh.ny - 1) if mesh.ny > 1 else 0
+        for i in range(mesh.ny):
+            y = mesh.y + i * dy
+            # Create strip from (x, y) to (x+width, y)
+            s = Strip(points=[(mesh.x, y), (mesh.x + mesh.width, y)],
+                      width=mesh.strip_width, # Or diameter if we supported wire mesh
+                      depth=mesh.depth)
+            # Default profile is flat, width is set.
+            # If mesh supports wire/flat in future, we would copy that.
+            self.canvas_manager.objects.append(s)
+
+        # Y-direction lines (vertical)
+        # There are Nx lines. Spacing Lx / (Nx-1)
+        dx = mesh.width / (mesh.nx - 1) if mesh.nx > 1 else 0
+        for i in range(mesh.nx):
+            x = mesh.x + i * dx
+            # Create strip from (x, y) to (x, y+height)
+            s = Strip(points=[(x, mesh.y), (x, mesh.y + mesh.height)],
+                      width=mesh.strip_width,
+                      depth=mesh.depth)
+            self.canvas_manager.objects.append(s)
+
+        # Remove original mesh
+        self.canvas_manager.objects.remove(mesh)
+        self.canvas_manager.deselect_all()
+        self.canvas_manager.refresh_objects()
+        self.update_properties_panel(None)
 
     def apply_property(self, key, value):
         if self.canvas_manager.selected_object:

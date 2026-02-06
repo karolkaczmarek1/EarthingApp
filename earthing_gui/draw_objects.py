@@ -23,7 +23,7 @@ class Rod(DrawObject):
     x: float = 0.0
     y: float = 0.0
     depth: float = 0.5
-    radius: float = 0.04
+    radius: float = 0.008  # Default diameter 16mm -> radius 8mm
     length: float = 3.0
 
     def draw(self, canvas, manager):
@@ -42,12 +42,14 @@ class Rod(DrawObject):
             'x': self.x,
             'y': self.y,
             'depth': self.depth,
-            'radius': self.radius,
+            'diameter': self.radius * 2, # Expose diameter
             'length': self.length
         }
 
     def set_property(self, key, value):
-        if hasattr(self, key):
+        if key == 'diameter':
+            self.radius = float(value) / 2.0
+        elif hasattr(self, key):
             setattr(self, key, float(value))
 
 @dataclass

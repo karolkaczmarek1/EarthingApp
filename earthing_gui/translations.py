@@ -1,4 +1,3 @@
-TRANS = {
     'en': {
         'app_title': 'Earthing Design Tool',
         'file': 'File',
@@ -41,7 +40,8 @@ TRANS = {
         'profile_type': 'Profile Type',
         'flat': 'Flat Strip (Tape)',
         'round': 'Round Wire',
-        'radius': 'Radius (m)'
+        'radius': 'Radius (m)',
+        'explode': 'Explode Mesh'
     },
     'pl': {
         'app_title': 'Narzędzie do Projektowania Uziemień',
@@ -85,7 +85,8 @@ TRANS = {
         'profile_type': 'Typ Przekroju',
         'flat': 'Bednarka (Płaskownik)',
         'round': 'Drut (Okrągły)',
-        'radius': 'Promień (m)'
+        'radius': 'Promień (m)',
+        'explode': 'Rozbij Siatkę'
     }
 }
 
