@@ -6,13 +6,14 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 try:
-    from earthing import Network
+    from earthing import Network, NetworkElementPipe
 except ImportError:
     # If not installed or not in path, assume running from repo root
     sys.path.append(os.getcwd())
-    from earthing import Network
+    from earthing import Network, NetworkElementPipe
 
 from .draw_objects import Rod, Strip, Mesh, Plate
+import numpy as np
 
 class SimulationAdapter:
     def __init__(self):
@@ -35,13 +36,29 @@ class SimulationAdapter:
                 network.add_rod([obj.x, obj.y, z], obj.radius, obj.length)
 
             elif isinstance(obj, Strip):
-                # add_strip(loc_start, loc_end, w)
                 # Points are list of (x,y). Z is constant depth.
                 z = -abs(obj.depth)
                 for i in range(len(obj.points)-1):
                     p1 = obj.points[i]
                     p2 = obj.points[i+1]
-                    network.add_strip([p1[0], p1[1], z], [p2[0], p2[1], z], obj.width)
+
+                    if obj.profile_type == 'round':
+                        # Use NetworkElementPipe for arbitrary oriented round conductor
+                        # Network has no helper for this, so we must manually create and append it
+                        # loc start, rho, radius, loc end
+                        start = np.array([p1[0], p1[1], z])
+                        end = np.array([p2[0], p2[1], z])
+                        radius = obj.diameter / 2.0
+
+                        # Note: We need to use the same 'rho' as the network.
+                        # Since we made rho global, we use the passed rho.
+                        element = NetworkElementPipe(start, rho, radius, end)
+
+                        # Add to the current subnet (last one)
+                        network.elements[-1].append(element)
+                    else:
+                        # Flat strip
+                        network.add_strip([p1[0], p1[1], z], [p2[0], p2[1], z], obj.width)
 
             elif isinstance(obj, Mesh):
                 # add_mesh(loc, Lx, Ly, Nx, Ny, w)

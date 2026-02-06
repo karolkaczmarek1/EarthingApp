@@ -53,7 +53,9 @@ class Rod(DrawObject):
 @dataclass
 class Strip(DrawObject):
     points: List[Tuple[float, float]] = field(default_factory=list)
-    width: float = 0.025
+    profile_type: str = 'flat' # 'flat' or 'round'
+    width: float = 0.03 # 30mm standard
+    diameter: float = 0.006 # 6mm standard
     depth: float = 0.5
 
     def draw(self, canvas, manager):
@@ -63,6 +65,8 @@ class Strip(DrawObject):
             screen_points.extend(manager.world_to_screen(wx, wy))
 
         color = "red" if self.selected else "green"
+        # Differentiate visual style slightly? Maybe dashed for wire?
+        # For now just width
         width = 3 if self.selected else 2
         canvas.create_line(*screen_points, fill=color, width=width, tags="object")
 
@@ -92,13 +96,19 @@ class Strip(DrawObject):
         return ((px-closest_x)**2 + (py-closest_y)**2)**0.5
 
     def get_properties(self):
+        # Return all potential properties. The UI will filter/handle display.
+        # Actually, for the dynamic UI, let's return everything and let UI logic handle visibility
         return {
+            'profile_type': self.profile_type,
             'width': self.width,
+            'diameter': self.diameter,
             'depth': self.depth
         }
 
     def set_property(self, key, value):
-         if hasattr(self, key):
+        if key == 'profile_type':
+            self.profile_type = str(value)
+        elif hasattr(self, key):
             setattr(self, key, float(value))
 
 @dataclass

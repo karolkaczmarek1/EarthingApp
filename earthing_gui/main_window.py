@@ -163,22 +163,41 @@ class MainWindow:
         props = obj.get_properties()
         self.prop_entries = {}
 
+        # Check if it's a strip to handle profile type visibility logic
+        profile_type = props.get('profile_type', None)
+
         row = 0
         for key, value in props.items():
+            # Special handling for visibility based on profile_type
+            if profile_type == 'flat' and key == 'diameter': continue
+            if profile_type == 'round' and key == 'width': continue
+
             # Translate label if possible
             label_text = t(key) if t(key) != key else key.capitalize()
 
             ttk.Label(self.prop_container, text=label_text).grid(row=row, column=0, padx=2, pady=2, sticky=tk.W)
 
-            var = tk.StringVar(value=str(value))
-            entry = ttk.Entry(self.prop_container, textvariable=var)
-            entry.grid(row=row, column=1, padx=2, pady=2, sticky=tk.EW)
+            if key == 'profile_type':
+                # Use Combobox
+                var = tk.StringVar(value=value)
+                cb = ttk.Combobox(self.prop_container, textvariable=var, state="readonly")
+                cb['values'] = ('flat', 'round')
+                cb.grid(row=row, column=1, padx=2, pady=2, sticky=tk.EW)
 
-            # Bind update
-            entry.bind("<Return>", lambda e, k=key, v=var: self.apply_property(k, v.get()))
-            entry.bind("<FocusOut>", lambda e, k=key, v=var: self.apply_property(k, v.get()))
+                # Bind select event
+                cb.bind("<<ComboboxSelected>>", lambda e, k=key, v=var: self.apply_property(k, v.get()))
+                self.prop_entries[key] = var
+            else:
+                var = tk.StringVar(value=str(value))
+                entry = ttk.Entry(self.prop_container, textvariable=var)
+                entry.grid(row=row, column=1, padx=2, pady=2, sticky=tk.EW)
 
-            self.prop_entries[key] = var
+                # Bind update
+                entry.bind("<Return>", lambda e, k=key, v=var: self.apply_property(k, v.get()))
+                entry.bind("<FocusOut>", lambda e, k=key, v=var: self.apply_property(k, v.get()))
+
+                self.prop_entries[key] = var
+
             row += 1
 
         ttk.Button(self.prop_container, text=t('delete'), command=self.delete_selected).grid(row=row, column=0, columnspan=2, pady=10)
@@ -188,6 +207,9 @@ class MainWindow:
             try:
                 self.canvas_manager.selected_object.set_property(key, value)
                 self.canvas_manager.refresh_objects()
+                # If profile_type changed, refresh the whole panel to show/hide fields
+                if key == 'profile_type':
+                     self.update_properties_panel(self.canvas_manager.selected_object)
             except Exception as e:
                 print(f"Error setting property: {e}")
 

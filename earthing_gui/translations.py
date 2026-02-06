@@ -1,5 +1,3 @@
-
-TRANS = {
     'en': {
         'app_title': 'Earthing Design Tool',
         'file': 'File',
@@ -38,7 +36,11 @@ TRANS = {
         'delete': 'Delete',
         'clear': 'Clear All',
         'plot_surface': 'Surface Potential',
-        'plot_geometry': 'Geometry 3D'
+        'plot_geometry': 'Geometry 3D',
+        'profile_type': 'Profile Type',
+        'flat': 'Flat Strip (Tape)',
+        'round': 'Round Wire',
+        'radius': 'Radius (m)'
     },
     'pl': {
         'app_title': 'Narzędzie do Projektowania Uziemień',
@@ -78,7 +80,11 @@ TRANS = {
         'delete': 'Usuń',
         'clear': 'Wyczyść wszystko',
         'plot_surface': 'Potencjał Powierzchniowy',
-        'plot_geometry': 'Geometria 3D'
+        'plot_geometry': 'Geometria 3D',
+        'profile_type': 'Typ Przekroju',
+        'flat': 'Bednarka (Płaskownik)',
+        'round': 'Drut (Okrągły)',
+        'radius': 'Promień (m)'
     }
 }
 
