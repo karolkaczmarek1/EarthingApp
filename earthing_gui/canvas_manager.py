@@ -2,11 +2,14 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from .draw_objects import Rod, Strip, Mesh, Plate
 
+import numpy as np
+
 class CanvasManager:
-    def __init__(self, root, canvas, update_prop_callback=None):
+    def __init__(self, root, canvas, update_prop_callback=None, probe_callback=None):
         self.root = root
         self.canvas = canvas
         self.update_prop_callback = update_prop_callback
+        self.probe_callback = probe_callback
 
         self.scale = 20.0  # Pixels per meter
         self.offset_x = 400
@@ -141,6 +144,10 @@ class CanvasManager:
         elif self.current_tool == "plate":
             self.objects.append(Plate(x=wx, y=wy))
             self.refresh_objects()
+
+        elif self.current_tool == "probe":
+            if self.probe_callback:
+                self.probe_callback(wx, wy)
 
     def on_drag(self, event):
         wx, wy = self.screen_to_world(event.x, event.y)

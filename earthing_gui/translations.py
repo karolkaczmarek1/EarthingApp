@@ -1,4 +1,3 @@
-TRANS = {
     'en': {
         'app_title': 'Earthing Design Tool',
         'file': 'File',
@@ -10,6 +9,7 @@ TRANS = {
         'rod': 'Rod',
         'mesh': 'Mesh',
         'plate': 'Plate',
+        'probe': 'Probe',
         'properties': 'Properties',
         'simulate': 'Simulate',
         'results': 'Results',
@@ -37,12 +37,26 @@ TRANS = {
         'delete': 'Delete',
         'clear': 'Clear All',
         'plot_surface': 'Surface Potential',
+        'plot_touch': 'Touch Voltage',
+        'plot_step': 'Step Voltage',
+        'plot_current': 'Current Density',
         'plot_geometry': 'Geometry 3D',
         'profile_type': 'Profile Type',
         'flat': 'Flat Strip (Tape)',
         'round': 'Round Wire',
         'radius': 'Radius (m)',
-        'explode': 'Explode Mesh'
+        'explode': 'Explode Mesh',
+        'safety_params': 'Safety Parameters (IEEE 80)',
+        'fault_duration': 'Fault Duration (s)',
+        'surface_rho': 'Surface Layer Rho (Ohm-m)',
+        'surface_h': 'Surface Layer Depth (m)',
+        'safety_limits': 'Safety Limits',
+        'e_touch_limit': 'E_touch Limit',
+        'e_step_limit': 'E_step Limit',
+        'assessment': 'Assessment',
+        'safe': 'SAFE',
+        'unsafe': 'UNSAFE',
+        'probe_val': 'Potential at'
     },
     'pl': {
         'app_title': 'Narzędzie do Projektowania Uziemień',
@@ -55,6 +69,7 @@ TRANS = {
         'rod': 'Pręt (Szpilka)',
         'mesh': 'Siatka',
         'plate': 'Płyta',
+        'probe': 'Próbnik',
         'properties': 'Właściwości',
         'simulate': 'Symulacja',
         'results': 'Wyniki',
@@ -82,12 +97,26 @@ TRANS = {
         'delete': 'Usuń',
         'clear': 'Wyczyść wszystko',
         'plot_surface': 'Potencjał Powierzchniowy',
+        'plot_touch': 'Napięcie Dotykowe',
+        'plot_step': 'Napięcie Krokowe',
+        'plot_current': 'Gęstość Prądu',
         'plot_geometry': 'Geometria 3D',
         'profile_type': 'Typ Przekroju',
         'flat': 'Bednarka (Płaskownik)',
         'round': 'Drut (Okrągły)',
         'radius': 'Promień (m)',
-        'explode': 'Rozbij Siatkę'
+        'explode': 'Rozbij Siatkę',
+        'safety_params': 'Parametry Bezpieczeństwa (IEEE 80)',
+        'fault_duration': 'Czas Zwarcia (s)',
+        'surface_rho': 'Rezystywność Warstwy (Ohm-m)',
+        'surface_h': 'Grubość Warstwy (m)',
+        'safety_limits': 'Limity Bezpieczeństwa',
+        'e_touch_limit': 'Limit Nap. Dotykowego',
+        'e_step_limit': 'Limit Nap. Krokowego',
+        'assessment': 'Ocena',
+        'safe': 'BEZPIECZNE',
+        'unsafe': 'NIEBEZPIECZNE',
+        'probe_val': 'Potencjał w'
     }
 }
 

@@ -50,6 +50,7 @@ class MainWindow:
             ("rod", t('rod')),
             ("mesh", t('mesh')),
             ("plate", t('plate')),
+            ("probe", t('probe')),
         ]
 
         for key, label in tools:
@@ -87,7 +88,7 @@ class MainWindow:
         v_scroll.pack(side=tk.RIGHT, fill=tk.Y)
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.canvas_manager = CanvasManager(self.root, self.canvas, self.update_properties_panel)
+        self.canvas_manager = CanvasManager(self.root, self.canvas, self.update_properties_panel, self.on_probe)
         self.canvas.bind("<Configure>", lambda e: self.canvas_manager.draw_grid())
 
         # Right Panel
@@ -112,6 +113,25 @@ class MainWindow:
         ttk.Label(rho_frame, text=t('resistivity')).pack(anchor=tk.W)
         self.rho_var = tk.StringVar(value="100.0")
         ttk.Entry(rho_frame, textvariable=self.rho_var).pack(fill=tk.X)
+
+        # Safety Parameters
+        safe_frame = ttk.LabelFrame(sim_frame, text=t('safety_params'))
+        safe_frame.pack(fill=tk.X, padx=5, pady=5)
+
+        # Fault Duration
+        ttk.Label(safe_frame, text=t('fault_duration')).pack(anchor=tk.W, padx=2)
+        self.ts_var = tk.StringVar(value="0.5")
+        ttk.Entry(safe_frame, textvariable=self.ts_var).pack(fill=tk.X, padx=2)
+
+        # Surface Layer Rho
+        ttk.Label(safe_frame, text=t('surface_rho')).pack(anchor=tk.W, padx=2)
+        self.rhos_var = tk.StringVar(value="2500")
+        ttk.Entry(safe_frame, textvariable=self.rhos_var).pack(fill=tk.X, padx=2)
+
+        # Surface Layer Thickness
+        ttk.Label(safe_frame, text=t('surface_h')).pack(anchor=tk.W, padx=2)
+        self.hs_var = tk.StringVar(value="0.1")
+        ttk.Entry(safe_frame, textvariable=self.hs_var).pack(fill=tk.X, padx=2)
 
         ttk.Button(sim_frame, text=t('run'), command=self.run_simulation).pack(fill=tk.X, padx=5, pady=5)
 
@@ -206,6 +226,21 @@ class MainWindow:
         # Special action for Mesh: Explode
         if isinstance(obj, Mesh):
             ttk.Button(self.prop_container, text=t('explode'), command=lambda: self.explode_mesh(obj)).grid(row=row+1, column=0, columnspan=2, pady=5)
+
+    def on_probe(self, x, y):
+        # Callback from probe tool
+        network = self.sim_manager.last_network
+        if network and network.X is not None:
+             # Calculate potential at x,y,0 (surface)
+             import numpy as np
+             try:
+                 v = network.get_point_potential(np.array([x, y, 0]))
+                 if hasattr(v, '__iter__'): v = v[0]
+                 messagebox.showinfo(t('probe'), f"{t('probe_val')} ({x:.2f}, {y:.2f}): {v:.2f} V")
+             except Exception as e:
+                 print(f"Probe error: {e}")
+        else:
+             messagebox.showinfo(t('probe'), t('solving') + " needed first.")
 
     def explode_mesh(self, mesh):
         if not mesh: return
