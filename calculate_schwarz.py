@@ -13,23 +13,35 @@ def calculate_schwarz():
     Ly = 100.0           # Width (m)
     Area = Lx * Ly       # Area (m^2)
 
-    # Grid Conductors
-    dx = 15.0            # Spacing x (m)
-    dy = 10.0            # Spacing y (m)
+    # Grid Counts (from Image)
+    Nx = 11
+    Ny = 9
 
-    # Number of lines
-    nx = int(Lx / dx) + 1  # 9 lines of length Ly
-    ny = int(Ly / dy) + 1  # 11 lines of length Lx
+    # Spacing
+    dx = Lx / (Nx - 1)
+    dy = Ly / (Ny - 1)
 
     # Total length of horizontal grid conductors (Lc)
-    Lc = (nx * Ly) + (ny * Lx)
+    # Nx lines of length Ly + Ny lines of length Lx
+    Lc = (Nx * Ly) + (Ny * Lx)
 
     h = 0.8              # Grid depth (m)
-    d_c = 0.01           # Conductor diameter (m)
-    r_c = d_c / 2.0      # Conductor radius (m)
+
+    # Conductor: Strip 25mm
+    w = 0.025
+    # Equivalent diameter for strip
+    # IEEE Std 80-2000, Table 1: d = 2*w/pi?
+    # Or simplified d = w/2.
+    # IEEE 80 Eq 32 for a' (Geometric Mean Radius):
+    # a' = sqrt(d*h) for round wire? No, a' = sqrt(r*2h).
+    # For strip, the equivalent diameter d_eff is often taken as w/2.
+    # Let's use d_c = w / 2 for the diameter approximation in the logarithmic term.
+
+    d_c = w / 2.0        # Equivalent diameter (approx)
+    r_c = d_c / 2.0      # Equivalent radius
 
     # Rods
-    nr = 99              # Number of rods
+    nr = Nx * Ny         # 99 rods
     Lr = 6.0             # Length of single rod (m)
     d_r = 0.02           # Rod diameter (m)
     r_r = d_r / 2.0      # Rod radius (m)
@@ -37,14 +49,10 @@ def calculate_schwarz():
     # -------------------------------------------------------------------------
     # Analytical Coefficients k1 and k2 (IEEE Std 80, Eq C.1 & C.2)
     # -------------------------------------------------------------------------
-    # For a rectangular grid, k1 and k2 are functions of the length-to-width ratio.
-    # L is the longer side, W is the shorter side.
-
     L_grid = max(Lx, Ly)
     W_grid = min(Lx, Ly)
     ratio = L_grid / W_grid
 
-    # Analytical formulas (Curve-fitted from Schwarz's data)
     k1 = 1.43 - 0.05 * ratio
     k2 = 5.50 + 0.15 * ratio
 
@@ -53,6 +61,7 @@ def calculate_schwarz():
     print(f"  Area: {Area} m^2 ({Lx}x{Ly})")
     print(f"  Grid Lc: {Lc} m")
     print(f"  Depth h: {h} m")
+    print(f"  Conductor: Strip w={w}m (Equiv d={d_c}m)")
     print(f"  Rods nr: {nr}, Length: {Lr} m")
     print(f"  Aspect Ratio (L/W): {ratio:.2f}")
     print(f"  Coefficients (Analytical IEEE 80):")
@@ -63,12 +72,8 @@ def calculate_schwarz():
     # Schwarz Equations
     # -------------------------------------------------------------------------
 
-    # 1. Grid Resistance (R1) - IEEE 80 Eq 32 (modified for Schwarz)
-    # R1 = (rho / (pi * Lc)) * (ln(2*Lc / a') + k1 * Lc / sqrt(A) - k2)
-    #
-    # a' is the geometric mean radius of the grid conductor at depth h.
-    # a' = sqrt(r * 2h)  (for conductors buried at depth h)
-
+    # 1. Grid Resistance (R1)
+    # a' = sqrt(r_c * 2 * h)
     a_prime = np.sqrt(r_c * 2 * h)
 
     term1_R1 = np.log(2 * Lc / a_prime)
@@ -77,27 +82,20 @@ def calculate_schwarz():
 
     R1 = (rho / (np.pi * Lc)) * (term1_R1 + term2_R1 - term3_R1)
 
-    # 2. Rod Bed Resistance (R2) - IEEE 80 Eq 33
-    # R2 = (rho / (2 * pi * nr * Lr)) * (ln(4 * Lr / b) - 1 + (2 * k1 * Lr / sqrt(A)) * (sqrt(nr) - 1)^2)
-    # b is the radius of the rod (r_r)
-
+    # 2. Rod Bed Resistance (R2)
     term1_R2 = np.log(4 * Lr / r_r) - 1
     term2_R2 = (2 * k1 * Lr / np.sqrt(Area)) * (np.sqrt(nr) - 1)**2
 
     R2 = (rho / (2 * np.pi * nr * Lr)) * (term1_R2 + term2_R2)
 
-    # 3. Mutual Resistance (Rm) - IEEE 80 Eq 34
-    # Rm = (rho / (pi * Lc)) * (ln(2 * Lc / Lr) + k1 * Lc / sqrt(A) - k2 + 1)
-
+    # 3. Mutual Resistance (Rm)
     term1_Rm = np.log(2 * Lc / Lr)
-    term2_Rm = (k1 * Lc) / np.sqrt(Area) # Same as in R1
-    term3_Rm = k2                        # Same as in R1
+    term2_Rm = (k1 * Lc) / np.sqrt(Area)
+    term3_Rm = k2
 
     Rm = (rho / (np.pi * Lc)) * (term1_Rm + term2_Rm - term3_Rm + 1)
 
-    # 4. Total Resistance (Rg) - IEEE 80 Eq 35
-    # Rg = (R1 * R2 - Rm^2) / (R1 + R2 - 2 * Rm)
-
+    # 4. Total Resistance (Rg)
     Rg = (R1 * R2 - Rm**2) / (R1 + R2 - 2 * Rm)
 
     print("-" * 30)
