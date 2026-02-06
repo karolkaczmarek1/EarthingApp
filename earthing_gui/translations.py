@@ -1,3 +1,4 @@
+TRANS = {
     'en': {
         'app_title': 'Earthing Design Tool',
         'file': 'File',
