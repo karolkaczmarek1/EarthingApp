@@ -48,17 +48,17 @@ def calculate():
         pipe = earthing.NetworkElementPipe(start, rho, cond_rad, end)
         net.elements[0].append(pipe)
 
-    # Add Rods at corners
-    corners = [
-        (0.0, 0.0),
-        (Lx, 0.0),
-        (0.0, Ly),
-        (Lx, Ly)
-    ]
+    # Add Rods at every intersection
+    rod_count = 0
+    for i in range(nx):
+        x = i * dx
+        for j in range(ny):
+            y = j * dy
+            loc = (x, y, z)
+            net.add_rod(loc, rod_rad, rod_len)
+            rod_count += 1
 
-    for x, y in corners:
-        loc = (x, y, z)
-        net.add_rod(loc, rod_rad, rod_len)
+    print(f"Added {rod_count} rods.")
 
     print("Generating model... (this may take a moment)")
     # Using desc_size=2.0 for reasonable speed/accuracy trade-off
