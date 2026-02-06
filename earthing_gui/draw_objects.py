@@ -4,7 +4,6 @@ import tkinter as tk
 
 @dataclass
 class DrawObject:
-    type: str
     selected: bool = False
 
     def draw(self, canvas, manager):

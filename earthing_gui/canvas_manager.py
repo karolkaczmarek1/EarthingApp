@@ -123,7 +123,15 @@ class CanvasManager:
         elif self.current_tool == "strip":
             if not self.points:
                 self.points.append((wx, wy))
-            self.points.append((wx, wy)) # Second point follows mouse
+            # Only add a new point if it's significantly different from the last fixed point
+            # However, for the 'rubber band' effect, we need a tracking point.
+            # My logic: points[0] is start. points[-1] is the moving point.
+            # When we click, we want to fix the current tracking point and add a NEW tracking point.
+            if len(self.points) >= 1:
+                # Update the last point to be exactly where clicked (fixing it)
+                self.points[-1] = (wx, wy)
+                # Add a new tracking point that will move with mouse
+                self.points.append((wx, wy))
             self.draw_temp_polyline()
 
         elif self.current_tool == "mesh":
