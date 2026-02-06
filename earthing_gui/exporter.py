@@ -49,6 +49,33 @@ def export_html(parent, results, network):
         ax3.set_title(t('plot_step'))
     img3 = fig_to_base64(fig3)
 
+    # Geometry 3D
+    fig4 = plt.Figure(figsize=(6, 5))
+    ax4 = fig4.add_subplot(111, projection='3d')
+    from earthing import NetworkElementStrip, NetworkElementPipe, NetworkElementPlate, plot_cycler
+    styler = plot_cycler()
+    for subnet, style in zip(network.elements, styler):
+        for element in subnet:
+            if isinstance(element, NetworkElementStrip) \
+               or isinstance(element, NetworkElementPipe):
+                start = element.loc
+                end = element.loc_end
+                X = [start[0], end[0]]
+                Y = [start[1], end[1]]
+                Z = [start[2], end[2]]
+                ax4.plot(X, Y, Z, **style, linewidth=2)
+            if isinstance(element, NetworkElementPlate):
+                c1 = element.loc - element.w_cap*element.w/2 - element.h_cap*element.h/2
+                c2 = c1 + element.w_cap * element.w
+                c3 = c2 + element.h_cap * element.h
+                c4 = c3 - element.w_cap * element.w
+                X = [c1[0], c2[0], c3[0], c4[0], c1[0]]
+                Y = [c1[1], c2[1], c3[1], c4[1], c1[1]]
+                Z = [c1[2], c2[2], c3[2], c4[2], c1[2]]
+                ax4.plot(X, Y, Z, **style, linewidth=2)
+    ax4.set_title(t('plot_geometry'))
+    img4 = fig_to_base64(fig4)
+
     # Assess Safety
     touch_limit = results.get('e_touch_limit', 0)
     step_limit = results.get('e_step_limit', 0)
@@ -93,6 +120,11 @@ def export_html(parent, results, network):
         <div class="plot-box">
             <h3>{t('plot_step')}</h3>
             <img src="data:image/png;base64,{img3}" />
+        </div>
+
+        <div class="plot-box">
+            <h3>{t('plot_geometry')}</h3>
+            <img src="data:image/png;base64,{img4}" />
         </div>
     </body>
     </html>

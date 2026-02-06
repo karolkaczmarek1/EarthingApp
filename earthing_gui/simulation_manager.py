@@ -29,6 +29,7 @@ class SimulationManager:
             # Get Global Rho
             try:
                 rho = float(self.mw.rho_var.get())
+                ig = float(self.mw.ig_var.get())
                 t_s = float(self.mw.ts_var.get())
                 rho_s = float(self.mw.rhos_var.get())
                 h_s = float(self.mw.hs_var.get())
@@ -40,7 +41,7 @@ class SimulationManager:
             self.mw.result_text.insert(tk.END, t('generating') + "\n")
             self.mw.root.update()
 
-            network = self.adapter.run(objects, rho)
+            network = self.adapter.run(objects, rho, ig)
             self.last_network = network
 
             self.mw.result_text.insert(tk.END, t('solving') + "\n")
@@ -110,6 +111,11 @@ class SimulationManager:
         notebook.add(frame4, text=t('plot_current'))
         self.plot_current_density(network, frame4)
 
+        # Tab 5: Geometry 3D
+        frame5 = ttk.Frame(notebook)
+        notebook.add(frame5, text=t('plot_geometry'))
+        self.plot_geometry_3d_embedded(network, frame5)
+
     def calculate_bounds(self):
         objects = self.mw.canvas_manager.objects
         if not objects:
@@ -172,11 +178,51 @@ class SimulationManager:
         V = network.Vg
 
         contour_plot = ax.contourf(XX, YY, V, 20, cmap="plasma")
-        fig.colorbar(contour_plot, ax=ax)
+        cbar = fig.colorbar(contour_plot, ax=ax)
+        cbar.set_label('Voltage (V)')
 
         ax.set_title(t('plot_surface'))
         ax.set_xlabel('X (m)')
         ax.set_ylabel('Y (m)')
+        ax.grid(True, linestyle='--', alpha=0.5)
+
+        canvas = FigureCanvasTkAgg(fig, master=parent)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+    def plot_geometry_3d_embedded(self, network, parent):
+        fig = plt.Figure(figsize=(5, 4), dpi=100)
+        ax = fig.add_subplot(111, projection='3d')
+
+        # Plot geometry similar to library logic
+        from earthing import NetworkElementStrip, NetworkElementPipe, NetworkElementPlate
+        from earthing import plot_cycler
+
+        styler = plot_cycler()
+        for subnet, style in zip(network.elements, styler):
+            for element in subnet:
+                if isinstance(element, NetworkElementStrip) \
+                   or isinstance(element, NetworkElementPipe):
+                    start = element.loc
+                    end = element.loc_end
+                    X = [start[0], end[0]]
+                    Y = [start[1], end[1]]
+                    Z = [start[2], end[2]]
+                    ax.plot(X, Y, Z, **style, linewidth=2)
+                if isinstance(element, NetworkElementPlate):
+                    c1 = element.loc - element.w_cap*element.w/2 - element.h_cap*element.h/2
+                    c2 = c1 + element.w_cap * element.w
+                    c3 = c2 + element.h_cap * element.h
+                    c4 = c3 - element.w_cap * element.w
+                    X = [c1[0], c2[0], c3[0], c4[0], c1[0]]
+                    Y = [c1[1], c2[1], c3[1], c4[1], c1[1]]
+                    Z = [c1[2], c2[2], c3[2], c4[2], c1[2]]
+                    ax.plot(X, Y, Z, **style, linewidth=2)
+
+        ax.set_xlabel('X (m)')
+        ax.set_ylabel('Y (m)')
+        ax.set_zlabel('Z (m)')
+        ax.set_title(t('plot_geometry'))
 
         canvas = FigureCanvasTkAgg(fig, master=parent)
         canvas.draw()
@@ -186,24 +232,21 @@ class SimulationManager:
         fig = plt.Figure(figsize=(5, 4), dpi=100)
         ax = fig.add_subplot(111, projection='3d')
 
-        # Plot problem geometry with current as weight
-        # Based on network.plot_geometry_3d implementation
-        X = []
-        Y = []
-        Z = []
+        X, Y, Z = [], [], []
         if network.descrete_elements:
-            for slno, element in enumerate(network.descrete_elements):
+            for element in network.descrete_elements:
                 loc = element.loc
                 X.append(loc[0])
                 Y.append(loc[1])
                 Z.append(loc[2])
 
-            scat_plot = ax.scatter(X, Y, Z, c=network.I, s=5, cmap='viridis')
-            fig.colorbar(scat_plot, ax=ax)
+            scat_plot = ax.scatter(X, Y, Z, c=network.I, s=10, cmap='inferno')
+            cbar = fig.colorbar(scat_plot, ax=ax)
+            cbar.set_label('Current (A)')
 
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
+        ax.set_xlabel('X (m)')
+        ax.set_ylabel('Y (m)')
+        ax.set_zlabel('Z (m)')
         ax.set_title(t('plot_current'))
 
         canvas = FigureCanvasTkAgg(fig, master=parent)
@@ -213,14 +256,6 @@ class SimulationManager:
     def plot_touch_voltage(self, network, parent):
         fig = plt.Figure(figsize=(5, 4), dpi=100)
 
-        # Touch Voltage ~= GPR - Surface Potential (simplified definition often used)
-        # More accurately: V_touch = V_grid - V_surface_at_feet
-        # Assuming V_grid is GPR of the main grid.
-
-        # Ensure surface potential is solved (it was solved in plot_surface_potential call,
-        # or we solve it again if that tab wasn't called?
-        # Actually show_plots calls plot_surface_potential first which solves it.
-        # But if we change order or make it lazy, we need to check.
         if network.Vg is None:
              xlim, ylim = self.calculate_bounds()
              network.solve_surface_potential_fast(grid=(50,50), xlim=xlim, ylim=ylim)
@@ -229,16 +264,26 @@ class SimulationManager:
         if hasattr(gpr, '__iter__'):
              gpr = max(gpr)
 
-        # V_touch map
         V_touch = gpr - network.Vg
 
         ax = fig.add_subplot(111)
-        contour_plot = ax.contourf(network.XX, network.YY, V_touch, 20, cmap="Reds")
-        fig.colorbar(contour_plot, ax=ax)
+        # Use more levels for better gradient
+        contour_plot = ax.contourf(network.XX, network.YY, V_touch, 30, cmap="Reds")
+        cbar = fig.colorbar(contour_plot, ax=ax)
+        cbar.set_label('Voltage (V)')
+
+        # Add safety limit contour if available
+        limit = self.last_results.get('e_touch_limit')
+        if limit:
+            try:
+                ax.contour(network.XX, network.YY, V_touch, levels=[limit], colors='blue', linewidths=2, linestyles='dashed')
+                ax.text(network.XX[0,0], network.YY[0,0], f"Limit: {limit}V", color='blue')
+            except: pass
 
         ax.set_title(t('plot_touch'))
         ax.set_xlabel('X (m)')
         ax.set_ylabel('Y (m)')
+        ax.grid(True, linestyle='--', alpha=0.5)
 
         canvas = FigureCanvasTkAgg(fig, master=parent)
         canvas.draw()
@@ -247,35 +292,31 @@ class SimulationManager:
     def plot_step_voltage(self, network, parent):
         fig = plt.Figure(figsize=(5, 4), dpi=100)
 
-        # Step Voltage: Max difference between points 1m apart.
-        # Library has `step_voltage` function but it finds MAX in a polygon.
-        # We want a map.
-        # We can approximate step voltage map by taking gradient of Vg * 1m.
-        # Grad V = (dV/dx, dV/dy). Step voltage ~= |Grad V| * 1m
-
         if network.Vg is None:
              xlim, ylim = self.calculate_bounds()
              network.solve_surface_potential_fast(grid=(50,50), xlim=xlim, ylim=ylim)
 
         import numpy as np
-        # Calculate gradient
-        # Vg is 2D array.
-        # spacing depends on grid size and xlim.
-        # network.XX is meshgrid.
-        # dx = XX[0,1] - XX[0,0]
         dx = network.XX[0,1] - network.XX[0,0]
         dy = network.YY[1,0] - network.YY[0,0]
-
         Vy, Vx = np.gradient(network.Vg, dy, dx)
-        V_step = np.sqrt(Vx**2 + Vy**2) * 1.0 # E field * 1m step
+        V_step = np.sqrt(Vx**2 + Vy**2) * 1.0
 
         ax = fig.add_subplot(111)
-        contour_plot = ax.contourf(network.XX, network.YY, V_step, 20, cmap="Oranges")
-        fig.colorbar(contour_plot, ax=ax)
+        contour_plot = ax.contourf(network.XX, network.YY, V_step, 30, cmap="Oranges")
+        cbar = fig.colorbar(contour_plot, ax=ax)
+        cbar.set_label('Voltage (V)')
+
+        limit = self.last_results.get('e_step_limit')
+        if limit:
+            try:
+                ax.contour(network.XX, network.YY, V_step, levels=[limit], colors='blue', linewidths=2, linestyles='dashed')
+            except: pass
 
         ax.set_title(t('plot_step'))
         ax.set_xlabel('X (m)')
         ax.set_ylabel('Y (m)')
+        ax.grid(True, linestyle='--', alpha=0.5)
 
         canvas = FigureCanvasTkAgg(fig, master=parent)
         canvas.draw()

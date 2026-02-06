@@ -19,12 +19,12 @@ class SimulationAdapter:
     def __init__(self):
         pass
 
-    def run(self, objects, global_rho):
+    def run(self, objects, global_rho, global_ig):
         if not objects:
             raise ValueError("No objects to simulate")
 
         rho = global_rho
-        Ig = 1000 # Default injection current, can be parameterized later
+        Ig = global_ig
 
         network = Network(rho, Ig)
 

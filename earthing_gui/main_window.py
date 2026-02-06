@@ -110,9 +110,14 @@ class MainWindow:
         # Global Rho Setting
         rho_frame = ttk.Frame(sim_frame)
         rho_frame.pack(fill=tk.X, padx=5, pady=5)
+
         ttk.Label(rho_frame, text=t('resistivity')).pack(anchor=tk.W)
         self.rho_var = tk.StringVar(value="100.0")
-        ttk.Entry(rho_frame, textvariable=self.rho_var).pack(fill=tk.X)
+        ttk.Entry(rho_frame, textvariable=self.rho_var).pack(fill=tk.X, pady=(0, 5))
+
+        ttk.Label(rho_frame, text=t('fault_current')).pack(anchor=tk.W)
+        self.ig_var = tk.StringVar(value="1000.0")
+        ttk.Entry(rho_frame, textvariable=self.ig_var).pack(fill=tk.X)
 
         # Safety Parameters
         safe_frame = ttk.LabelFrame(sim_frame, text=t('safety_params'))
