@@ -55,6 +55,8 @@ class SimulationAdapter:
                         element = NetworkElementPipe(start, rho, radius, end)
 
                         # Add to the current subnet (last one)
+                        if not network.elements:
+                            network.elements.append([])
                         network.elements[-1].append(element)
                     else:
                         # Flat strip
