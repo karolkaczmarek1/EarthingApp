@@ -18,15 +18,11 @@ class SimulationAdapter:
     def __init__(self):
         pass
 
-    def run(self, objects):
+    def run(self, objects, global_rho):
         if not objects:
             raise ValueError("No objects to simulate")
 
-        # Determine global rho from first object or use default
-        # Assuming uniform soil for simplicity as per library typical use
-        # But library supports per-element rho.
-        # We will use the rho of the first object to initialize Network
-        rho = objects[0].rho
+        rho = global_rho
         Ig = 1000 # Default injection current, can be parameterized later
 
         network = Network(rho, Ig)

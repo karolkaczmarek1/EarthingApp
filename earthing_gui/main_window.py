@@ -105,6 +105,13 @@ class MainWindow:
         sim_frame = ttk.LabelFrame(right_panel, text=t('simulate'))
         sim_frame.pack(fill=tk.X, pady=10)
 
+        # Global Rho Setting
+        rho_frame = ttk.Frame(sim_frame)
+        rho_frame.pack(fill=tk.X, padx=5, pady=5)
+        ttk.Label(rho_frame, text=t('resistivity')).pack(anchor=tk.W)
+        self.rho_var = tk.StringVar(value="100.0")
+        ttk.Entry(rho_frame, textvariable=self.rho_var).pack(fill=tk.X)
+
         ttk.Button(sim_frame, text=t('run'), command=self.run_simulation).pack(fill=tk.X, padx=5, pady=5)
 
         # Results area

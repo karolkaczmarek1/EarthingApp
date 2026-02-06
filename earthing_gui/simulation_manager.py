@@ -25,11 +25,18 @@ class SimulationManager:
             return
 
         try:
+            # Get Global Rho
+            try:
+                rho = float(self.mw.rho_var.get())
+            except ValueError:
+                messagebox.showerror(t('error'), "Invalid Resistivity Value")
+                return
+
             self.mw.result_text.delete(1.0, tk.END)
             self.mw.result_text.insert(tk.END, t('generating') + "\n")
             self.mw.root.update()
 
-            network = self.adapter.run(objects)
+            network = self.adapter.run(objects, rho)
             self.last_network = network
 
             self.mw.result_text.insert(tk.END, t('solving') + "\n")

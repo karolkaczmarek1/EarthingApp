@@ -25,7 +25,6 @@ class Rod(DrawObject):
     depth: float = 0.5
     radius: float = 0.04
     length: float = 3.0
-    rho: float = 100.0
 
     def draw(self, canvas, manager):
         sx, sy = manager.world_to_screen(self.x, self.y)
@@ -44,8 +43,7 @@ class Rod(DrawObject):
             'y': self.y,
             'depth': self.depth,
             'radius': self.radius,
-            'length': self.length,
-            'rho': self.rho
+            'length': self.length
         }
 
     def set_property(self, key, value):
@@ -57,7 +55,6 @@ class Strip(DrawObject):
     points: List[Tuple[float, float]] = field(default_factory=list)
     width: float = 0.025
     depth: float = 0.5
-    rho: float = 100.0
 
     def draw(self, canvas, manager):
         if len(self.points) < 2: return
@@ -97,8 +94,7 @@ class Strip(DrawObject):
     def get_properties(self):
         return {
             'width': self.width,
-            'depth': self.depth,
-            'rho': self.rho
+            'depth': self.depth
         }
 
     def set_property(self, key, value):
@@ -115,7 +111,6 @@ class Mesh(DrawObject):
     ny: int = 5
     strip_width: float = 0.025
     depth: float = 0.5
-    rho: float = 100.0
 
     def draw(self, canvas, manager):
         sx1, sy1 = manager.world_to_screen(self.x, self.y)
@@ -154,8 +149,7 @@ class Mesh(DrawObject):
             'Nx': self.nx,
             'Ny': self.ny,
             'strip_width': self.strip_width,
-            'depth': self.depth,
-            'rho': self.rho
+            'depth': self.depth
         }
 
     def set_property(self, key, value):
@@ -175,7 +169,6 @@ class Plate(DrawObject):
     width: float = 1.0
     height: float = 1.0
     depth: float = 1.0
-    rho: float = 100.0
 
     def draw(self, canvas, manager):
         sx, sy = manager.world_to_screen(self.x, self.y)
@@ -200,8 +193,7 @@ class Plate(DrawObject):
             'y': self.y,
             'width': self.width,
             'height': self.height,
-            'depth': self.depth,
-            'rho': self.rho
+            'depth': self.depth
         }
 
     def set_property(self, key, value):
