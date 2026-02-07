@@ -76,7 +76,8 @@ class MainWindow:
         ttk.Checkbutton(toolbox_frame, text=t('snap_to_grid'), variable=self.snap_var,
                         command=self.update_snap).pack(anchor=tk.W, padx=5)
 
-        ttk.Button(toolbox_frame, text=t('clear'), command=self.clear_all).pack(fill=tk.X, padx=5, pady=10)
+        ttk.Button(toolbox_frame, text=t('clear'), command=self.clear_all).pack(fill=tk.X, padx=5, pady=2)
+        ttk.Button(toolbox_frame, text=t('format_painter'), command=self.canvas_manager.activate_format_painter).pack(fill=tk.X, padx=5, pady=2)
 
         # Canvas Area
         canvas_frame = ttk.Frame(main_frame)
@@ -92,8 +93,17 @@ class MainWindow:
         v_scroll.pack(side=tk.RIGHT, fill=tk.Y)
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.canvas_manager = CanvasManager(self.root, self.canvas, self.update_properties_panel, self.on_probe)
+        # Status Bar
+        self.status_bar = ttk.Label(main_frame, text="X: 0.00 m, Y: 0.00 m", relief=tk.SUNKEN, anchor=tk.W)
+        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+
+        self.canvas_manager = CanvasManager(self.root, self.canvas, self.update_properties_panel, self.on_probe, self.update_cursor_info)
         self.canvas.bind("<Configure>", lambda e: self.canvas_manager.draw_grid())
+
+        # Keyboard shortcuts
+        self.root.bind("<Control-c>", lambda e: self.canvas_manager.copy_selection())
+        self.root.bind("<Control-v>", lambda e: self.canvas_manager.paste_selection())
+        self.root.bind("<Delete>", lambda e: self.canvas_manager.delete_selected())
 
         # Right Panel
         right_panel = ttk.Frame(main_frame, width=300)
@@ -328,6 +338,9 @@ class MainWindow:
         # Special action for Mesh: Explode
         if isinstance(obj, Mesh):
             ttk.Button(self.prop_container, text=t('explode'), command=lambda: self.explode_mesh(obj)).grid(row=row+1, column=0, columnspan=2, pady=5)
+
+    def update_cursor_info(self, x, y):
+        self.status_bar.config(text=f"X: {x:.2f} m, Y: {y:.2f} m")
 
     def on_probe(self, x, y):
         # Callback from probe tool
