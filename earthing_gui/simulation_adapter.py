@@ -78,7 +78,33 @@ class SimulationAdapter:
                 network.add_plate([obj.x, obj.y, z], obj.width, obj.height, n_cap=[0,0,1], h_cap=[0,1,0]) # Horizontal plate
         # Generate model
         # Using fast method for speed in UI
-        # Use user provided desc_size (validated by GUI)
+
+        # Safety check: Ensure desc_size is valid for the smallest element to prevent crashes
+        # This is primarily for headless mode (tests/scripts) where GUI validation is bypassed.
+        min_dim = float('inf')
+        for obj in objects:
+            if isinstance(obj, Rod):
+                min_dim = min(min_dim, obj.length)
+            elif isinstance(obj, Strip):
+                for i in range(len(obj.points)-1):
+                    p1 = np.array(obj.points[i])
+                    p2 = np.array(obj.points[i+1])
+                    dist = np.linalg.norm(p1 - p2)
+                    if dist > 0: min_dim = min(min_dim, dist)
+            elif isinstance(obj, Mesh):
+                if obj.nx > 1: min_dim = min(min_dim, obj.width / (obj.nx - 1))
+                if obj.ny > 1: min_dim = min(min_dim, obj.height / (obj.ny - 1))
+            elif isinstance(obj, Plate):
+                min_dim = min(min_dim, obj.width, obj.height)
+
+        if min_dim != float('inf') and desc_size > min_dim:
+            # Auto-adjust if the provided size is unsafe
+            safe_size = min_dim / 2.1
+            # But don't go ridiculously small automatically to avoid freezing
+            safe_size = max(0.001, safe_size)
+            if desc_size > safe_size:
+                print(f"Warning: Discretization step {desc_size} is too large for smallest element ({min_dim}). Reducing to {safe_size}.")
+                desc_size = safe_size
 
         network.generate_model_fast(desc_size=desc_size)
 
