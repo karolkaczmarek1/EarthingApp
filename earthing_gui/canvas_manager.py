@@ -61,6 +61,17 @@ class CanvasManager:
         self.canvas.bind("<Button-4>", self.on_zoom) # Linux Scroll Up
         self.canvas.bind("<Button-5>", self.on_zoom) # Linux Scroll Down
 
+    def set_tool(self, tool):
+        self.current_tool = tool
+        self.reset_temp()
+        self.deselect_all()
+        self.refresh_objects()
+        # Change cursor based on tool
+        if tool == "select":
+            self.canvas.config(cursor="arrow")
+        else:
+            self.canvas.config(cursor="crosshair")
+
     def world_to_screen(self, wx, wy):
         sx = self.offset_x + wx * self.scale
         sy = self.offset_y - wy * self.scale
