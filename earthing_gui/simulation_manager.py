@@ -30,6 +30,7 @@ class SimulationManager:
             try:
                 rho = float(self.mw.rho_var.get())
                 ig = float(self.mw.ig_var.get())
+                desc_size = float(self.mw.desc_size_var.get())
                 t_s = float(self.mw.ts_var.get())
                 rho_s = float(self.mw.rhos_var.get())
                 h_s = float(self.mw.hs_var.get())
@@ -41,7 +42,7 @@ class SimulationManager:
             self.mw.result_text.insert(tk.END, t('generating') + "\n")
             self.mw.root.update()
 
-            network = self.adapter.run(objects, rho, ig)
+            network = self.adapter.run(objects, rho, ig, desc_size)
             self.last_network = network
 
             self.mw.result_text.insert(tk.END, t('solving') + "\n")

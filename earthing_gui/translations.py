@@ -58,7 +58,11 @@ TRANS = {
         'assessment': 'Assessment',
         'safe': 'SAFE',
         'unsafe': 'UNSAFE',
-        'probe_val': 'Potential at'
+        'probe_val': 'Potential at',
+        'desc_size': 'Discretization (m)',
+        'warning_slow': 'Small discretization step may cause slow simulation. Proceed?',
+        'warning_small_elements': 'Some elements are too small for this discretization. Reduce step to {0:.4f} m?',
+        'warning': 'Warning'
     },
     'pl': {
         'app_title': 'Narzędzie do Projektowania Uziemień',
@@ -119,7 +123,11 @@ TRANS = {
         'assessment': 'Ocena',
         'safe': 'BEZPIECZNE',
         'unsafe': 'NIEBEZPIECZNE',
-        'probe_val': 'Potencjał w'
+        'probe_val': 'Potencjał w',
+        'desc_size': 'Dyskretyzacja (m)',
+        'warning_slow': 'Mały krok dyskretyzacji może spowolnić symulację. Kontynuować?',
+        'warning_small_elements': 'Niektóre elementy są za małe dla tego kroku. Zmniejszyć krok do {0:.4f} m?',
+        'warning': 'Ostrzeżenie'
     }
 }
 

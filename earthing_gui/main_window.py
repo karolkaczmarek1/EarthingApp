@@ -121,7 +121,16 @@ class MainWindow:
 
         ttk.Label(rho_frame, text=t('fault_current')).pack(anchor=tk.W)
         self.ig_var = tk.StringVar(value="1000.0")
-        ttk.Entry(rho_frame, textvariable=self.ig_var).pack(fill=tk.X)
+        ttk.Entry(rho_frame, textvariable=self.ig_var).pack(fill=tk.X, pady=(0, 5))
+
+        ttk.Label(rho_frame, text=t('desc_size')).pack(anchor=tk.W)
+        self.desc_size_var = tk.StringVar(value="0.25")
+        entry = ttk.Entry(rho_frame, textvariable=self.desc_size_var)
+        entry.pack(fill=tk.X)
+
+        # Warning label (hidden by default)
+        self.warning_lbl = ttk.Label(rho_frame, text="!", foreground="red", font=("Arial", 12, "bold"))
+        # self.warning_lbl.pack() # Pack when needed
 
         # Safety Parameters
         safe_frame = ttk.LabelFrame(sim_frame, text=t('safety_params'))
@@ -182,6 +191,7 @@ class MainWindow:
                 if params:
                     self.rho_var.set(params.get('rho', "100.0"))
                     self.ig_var.set(params.get('ig', "1000.0"))
+                    self.desc_size_var.set(params.get('desc_size', "0.25"))
                     self.ts_var.set(params.get('t_s', "0.5"))
                     self.rhos_var.set(params.get('rho_s', "2500"))
                     self.hs_var.set(params.get('h_s', "0.1"))
@@ -192,6 +202,7 @@ class MainWindow:
             params = {
                 'rho': self.rho_var.get(),
                 'ig': self.ig_var.get(),
+                'desc_size': self.desc_size_var.get(),
                 't_s': self.ts_var.get(),
                 'rho_s': self.rhos_var.get(),
                 'h_s': self.hs_var.get()
@@ -201,8 +212,60 @@ class MainWindow:
     def export_report(self):
         self.sim_manager.export_data()
 
+    def validate_parameters(self):
+        objects = self.canvas_manager.objects
+        if not objects: return True
+
+        try:
+            desc_size = float(self.desc_size_var.get())
+        except ValueError:
+            messagebox.showerror(t('error'), "Invalid Discretization Value")
+            return False
+
+        # Check for small elements
+        import numpy as np
+        from .draw_objects import Rod, Strip, Mesh, Plate
+
+        min_dim = float('inf')
+        for obj in objects:
+            if isinstance(obj, Rod):
+                min_dim = min(min_dim, obj.length)
+            elif isinstance(obj, Strip):
+                for i in range(len(obj.points)-1):
+                    p1 = np.array(obj.points[i])
+                    p2 = np.array(obj.points[i+1])
+                    dist = np.linalg.norm(p1 - p2)
+                    if dist > 0: min_dim = min(min_dim, dist)
+            elif isinstance(obj, Mesh):
+                if obj.nx > 1: min_dim = min(min_dim, obj.width / (obj.nx - 1))
+                if obj.ny > 1: min_dim = min(min_dim, obj.height / (obj.ny - 1))
+            elif isinstance(obj, Plate):
+                min_dim = min(min_dim, obj.width, obj.height)
+
+        # Heuristic: desc_size should be <= min_dim / 2 (at least 2 segments)
+        # Library requires at least 1 segment. Let's aim for n >= 1.
+        # Safe limit: if desc_size > min_dim, we have a problem (0 segments).
+        # We target desc_size <= min_dim / 2.1
+
+        target_size = min_dim / 2.1
+        if desc_size > min_dim: # Definitely bad
+             if messagebox.askyesno(t('warning'), t('warning_small_elements').format(target_size)):
+                 self.desc_size_var.set(str(round(target_size, 4)))
+                 return True # Proceed with updated value? Or ask user to click run again?
+                 # Better to update and proceed.
+             else:
+                 return False # Abort
+
+        # Check for slow simulation
+        if desc_size < 0.1:
+             if not messagebox.askyesno(t('warning'), t('warning_slow')):
+                 return False
+
+        return True
+
     def run_simulation(self):
-        self.sim_manager.run()
+        if self.validate_parameters():
+            self.sim_manager.run()
 
     def clear_all(self):
         self.canvas_manager.objects = []
