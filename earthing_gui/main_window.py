@@ -6,6 +6,7 @@ from .canvas_manager import CanvasManager
 from .simulation_manager import SimulationManager
 from .exporter import export_html
 from .draw_objects import Mesh, Strip
+from .file_handler import save_to_json, load_from_json
 
 class MainWindow:
     def __init__(self, root):
@@ -26,6 +27,9 @@ class MainWindow:
 
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label=t('file'), menu=file_menu)
+        file_menu.add_command(label="Open Model (JSON)", command=self.load_model)
+        file_menu.add_command(label="Save Model (JSON)", command=self.save_model)
+        file_menu.add_separator()
         file_menu.add_command(label=t('export'), command=self.export_report)
         file_menu.add_separator()
         file_menu.add_command(label=t('switch_lang'), command=self.toggle_language)
@@ -164,6 +168,35 @@ class MainWindow:
         for widget in self.root.winfo_children():
             widget.destroy()
         self.setup_ui()
+
+    def load_model(self):
+        filepath = filedialog.askopenfilename(filetypes=[("JSON Files", "*.json")])
+        if filepath:
+            objects, params = load_from_json(filepath)
+            if objects is not None:
+                self.canvas_manager.objects = objects
+                self.canvas_manager.refresh_objects()
+                self.update_properties_panel(None)
+
+                # Restore parameters
+                if params:
+                    self.rho_var.set(params.get('rho', "100.0"))
+                    self.ig_var.set(params.get('ig', "1000.0"))
+                    self.ts_var.set(params.get('t_s', "0.5"))
+                    self.rhos_var.set(params.get('rho_s', "2500"))
+                    self.hs_var.set(params.get('h_s', "0.1"))
+
+    def save_model(self):
+        filepath = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON Files", "*.json")])
+        if filepath:
+            params = {
+                'rho': self.rho_var.get(),
+                'ig': self.ig_var.get(),
+                't_s': self.ts_var.get(),
+                'rho_s': self.rhos_var.get(),
+                'h_s': self.hs_var.get()
+            }
+            save_to_json(filepath, self.canvas_manager.objects, params)
 
     def export_report(self):
         self.sim_manager.export_data()
