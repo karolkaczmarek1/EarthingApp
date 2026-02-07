@@ -76,10 +76,53 @@ class SimulationAdapter:
                 # So loc is center.
                 z = -abs(obj.depth)
                 network.add_plate([obj.x, obj.y, z], obj.width, obj.height, n_cap=[0,0,1], h_cap=[0,1,0]) # Horizontal plate
-
         # Generate model
         # Using fast method for speed in UI
-        network.generate_model_fast()
+        # Dynamic desc_size calculation to prevent ZeroDivisionError for small objects
+        min_dim = float('inf')
+
+        for obj in objects:
+            if isinstance(obj, Rod):
+                min_dim = min(min_dim, obj.length)
+            elif isinstance(obj, Strip):
+                # Calculate lengths of segments
+                for i in range(len(obj.points)-1):
+                    p1 = np.array(obj.points[i])
+                    p2 = np.array(obj.points[i+1])
+                    dist = np.linalg.norm(p1 - p2)
+                    if dist > 0:
+                        min_dim = min(min_dim, dist)
+            elif isinstance(obj, Mesh):
+                # Check strip lengths in mesh
+                if obj.nx > 1:
+                    dx = obj.width / (obj.nx - 1)
+                    min_dim = min(min_dim, dx)
+                if obj.ny > 1:
+                    dy = obj.height / (obj.ny - 1)
+                    min_dim = min(min_dim, dy)
+            elif isinstance(obj, Plate):
+                min_dim = min(min_dim, obj.width, obj.height)
+
+        # Default is 0.25. Ensure we are at least slightly smaller than min_dim to get n >= 1
+        # n = int(len/size). If len=0.1, size must be < 0.1. e.g. 0.09.
+        # But for Plate: nw = int(w/size/2). so size < w/2.
+
+        # Safe heuristic:
+        if min_dim == float('inf'):
+            desc_size = 0.25
+        else:
+            # We want size such that int(min_dim/size) >= 1. size <= min_dim
+            # For plates: size <= min_dim/2
+            # Let's take min(0.25, min_dim / 2.1) to be safe for plates too
+            desc_size = min(0.25, min_dim / 2.1)
+
+        # Avoid extremely small sizes that would explode computation time
+        # If desc_size is too small (e.g. < 0.01m), we might have performance issues.
+        # But correctness is priority here.
+        if desc_size < 0.001:
+             desc_size = 0.001 # Hard clamp to 1mm to prevent freeze
+
+        network.generate_model_fast(desc_size=desc_size)
 
         # Solve
         network.solve_model()
