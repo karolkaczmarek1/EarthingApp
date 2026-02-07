@@ -27,8 +27,8 @@ class MainWindow:
 
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label=t('file'), menu=file_menu)
-        file_menu.add_command(label="Open Model (JSON)", command=self.load_model)
-        file_menu.add_command(label="Save Model (JSON)", command=self.save_model)
+        file_menu.add_command(label=t('open_model'), command=self.load_model)
+        file_menu.add_command(label=t('save_model'), command=self.save_model)
         file_menu.add_separator()
         file_menu.add_command(label=t('export'), command=self.export_report)
         file_menu.add_separator()

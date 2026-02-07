@@ -62,7 +62,9 @@ TRANS = {
         'desc_size': 'Discretization (m)',
         'warning_slow': 'Small discretization step may cause slow simulation. Proceed?',
         'warning_small_elements': 'Some elements are too small for this discretization. Reduce step to {0:.4f} m?',
-        'warning': 'Warning'
+        'warning': 'Warning',
+        'open_model': 'Open Model (JSON)',
+        'save_model': 'Save Model (JSON)'
     },
     'pl': {
         'app_title': 'Narzędzie do Projektowania Uziemień',
@@ -127,7 +129,9 @@ TRANS = {
         'desc_size': 'Dyskretyzacja (m)',
         'warning_slow': 'Mały krok dyskretyzacji może spowolnić symulację. Kontynuować?',
         'warning_small_elements': 'Niektóre elementy są za małe dla tego kroku. Zmniejszyć krok do {0:.4f} m?',
-        'warning': 'Ostrzeżenie'
+        'warning': 'Ostrzeżenie',
+        'open_model': 'Otwórz Model (JSON)',
+        'save_model': 'Zapisz Model (JSON)'
     }
 }
 

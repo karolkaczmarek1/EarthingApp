@@ -46,7 +46,10 @@ def load_from_json(filepath):
                 points = el.get("points", [])
                 # Convert list of lists to list of tuples if needed
                 points = [tuple(p) for p in points]
+                # Default profile to flat if not specified (legacy support)
+                profile = props.get("profile_type", "flat")
                 obj = Strip(points=points)
+                # Note: profile_type will be set by set_property loop below
             elif el_type == "Mesh":
                 obj = Mesh()
             elif el_type == "Plate":
