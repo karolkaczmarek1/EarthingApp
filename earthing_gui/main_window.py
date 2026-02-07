@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter import messagebox
+from tkinter import filedialog, messagebox
 from .translations import current_translator, t
 from .canvas_manager import CanvasManager
 from .simulation_manager import SimulationManager
