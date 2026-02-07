@@ -1,4 +1,3 @@
-TRANS = {
     'en': {
         'app_title': 'Earthing Design Tool',
         'file': 'File',
@@ -64,7 +63,10 @@ TRANS = {
         'warning_small_elements': 'Some elements are too small for this discretization. Reduce step to {0:.4f} m?',
         'warning': 'Warning',
         'open_model': 'Open Model (JSON)',
-        'save_model': 'Save Model (JSON)'
+        'save_model': 'Save Model (JSON)',
+        'format_painter': 'Format Painter',
+        'copy': 'Copy (Ctrl+C)',
+        'paste': 'Paste (Ctrl+V)'
     },
     'pl': {
         'app_title': 'Narzędzie do Projektowania Uziemień',
@@ -131,7 +133,10 @@ TRANS = {
         'warning_small_elements': 'Niektóre elementy są za małe dla tego kroku. Zmniejszyć krok do {0:.4f} m?',
         'warning': 'Ostrzeżenie',
         'open_model': 'Otwórz Model (JSON)',
-        'save_model': 'Zapisz Model (JSON)'
+        'save_model': 'Zapisz Model (JSON)',
+        'format_painter': 'Malarz Parametrów',
+        'copy': 'Kopiuj (Ctrl+C)',
+        'paste': 'Wklej (Ctrl+V)'
     }
 }
 

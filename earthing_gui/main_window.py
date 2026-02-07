@@ -302,21 +302,22 @@ class MainWindow:
             if key == 'profile_type':
                 # Use Combobox
                 var = tk.StringVar(value=value)
+                var.trace_add("write", lambda *args, k=key, v=var: self.apply_property(k, v.get()))
+
                 cb = ttk.Combobox(self.prop_container, textvariable=var, state="readonly")
                 cb['values'] = ('flat', 'round')
                 cb.grid(row=row, column=1, padx=2, pady=2, sticky=tk.EW)
 
-                # Bind select event
-                cb.bind("<<ComboboxSelected>>", lambda e, k=key, v=var: self.apply_property(k, v.get()))
+                # Bind select event - redundant with trace but safe
+                # cb.bind("<<ComboboxSelected>>", ...)
                 self.prop_entries[key] = var
             else:
                 var = tk.StringVar(value=str(value))
+                # Auto-commit on change (trace) to avoid needing focus out
+                var.trace_add("write", lambda *args, k=key, v=var: self.apply_property(k, v.get()))
+
                 entry = ttk.Entry(self.prop_container, textvariable=var)
                 entry.grid(row=row, column=1, padx=2, pady=2, sticky=tk.EW)
-
-                # Bind update
-                entry.bind("<Return>", lambda e, k=key, v=var: self.apply_property(k, v.get()))
-                entry.bind("<FocusOut>", lambda e, k=key, v=var: self.apply_property(k, v.get()))
 
                 self.prop_entries[key] = var
 
