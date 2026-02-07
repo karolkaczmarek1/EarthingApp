@@ -29,10 +29,18 @@ Package is available on PyPI for installation ([https://pypi.org/project/earthin
 
 Program source includes detailed usage instructions for various functions and classes. Alternately project page has ipython notebooks covering typical use cases. 
 
+## GUI Application
+
+This project now includes a **Standalone GUI Tool** for earthing design.
+
+*   **Launch**: Run `python3 run_gui.py`
+*   **Features**: Drawing, Simulation, Safety Analysis, HTML Reports.
+*   **Documentation**: See [GUI Documentation](earthing_gui/docs/README.md).
 
 ## Dependencies:
 
 * Python 3
 * Numpy
 * Matplotlib
+* Tkinter (standard with Python)
 
