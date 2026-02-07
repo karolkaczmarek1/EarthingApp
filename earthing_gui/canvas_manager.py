@@ -72,6 +72,22 @@ class CanvasManager:
         else:
             self.canvas.config(cursor="crosshair")
 
+    def set_grid_size(self, val):
+        try:
+            self.grid_size = float(val)
+            self.draw_grid()
+        except ValueError:
+            pass
+
+    def set_snap(self, enabled):
+        self.snap_enabled = enabled
+
+    def reset_temp(self):
+        self.points = []
+        self.start_x = 0
+        self.start_y = 0
+        self.canvas.delete("temp")
+
     def world_to_screen(self, wx, wy):
         sx = self.offset_x + wx * self.scale
         sy = self.offset_y - wy * self.scale

@@ -77,7 +77,7 @@ class MainWindow:
                         command=self.update_snap).pack(anchor=tk.W, padx=5)
 
         ttk.Button(toolbox_frame, text=t('clear'), command=self.clear_all).pack(fill=tk.X, padx=5, pady=2)
-        ttk.Button(toolbox_frame, text=t('format_painter'), command=self.canvas_manager.activate_format_painter).pack(fill=tk.X, padx=5, pady=2)
+        ttk.Button(toolbox_frame, text=t('format_painter'), command=lambda: self.canvas_manager.activate_format_painter()).pack(fill=tk.X, padx=5, pady=2)
 
         # Canvas Area
         canvas_frame = ttk.Frame(main_frame)
